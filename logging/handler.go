@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/connectome-neuprint/neuPrintHTTP/config"
+	"github.com/aplbrain/neuPrintHTTP/config"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 

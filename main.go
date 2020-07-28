@@ -32,12 +32,12 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/connectome-neuprint/neuPrintHTTP/api"
-	"github.com/connectome-neuprint/neuPrintHTTP/config"
-	"github.com/connectome-neuprint/neuPrintHTTP/logging"
-	secure "github.com/janelia-flyem/echo-secure"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/aplbrain/neuPrintHTTP/api"
+	"github.com/aplbrain/neuPrintHTTP/config"
+	"github.com/aplbrain/neuPrintHTTP/logging"
+	secure "github.com/aplbrain/echo-secure"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func customUsage() {
@@ -133,7 +133,7 @@ func main() {
 	// setup logger
 	logger, err := logging.GetLogger(port, options)
 
-	e.Use(logging.LoggerWithConfig(logging.LoggerConfig{
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "{\"uri\": \"${uri}\", \"status\": ${status}, \"bytes_in\": ${bytes_in}, \"bytes_out\": ${bytes_out}, \"duration\": ${latency}, \"time\": ${time_unix}, \"user\": \"${custom:email}\", \"category\": \"${category}\", \"debug\": \"${custom:debug}\"}\n",
 		Output: logger,
 	}))

@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/connectome-neuprint/neuPrintHTTP/config"
+	"github.com/aplbrain/neuPrintHTTP/config"
 )
 
 // GetLogger gets a logging handler

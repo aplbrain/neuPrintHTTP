@@ -2,11 +2,11 @@ package config
 
 // loads all storage plugins
 import (
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
-	_ "github.com/connectome-neuprint/neuPrintHTTP/storage/badger"
-	_ "github.com/connectome-neuprint/neuPrintHTTP/storage/dvid"
-	_ "github.com/connectome-neuprint/neuPrintHTTP/storage/dvidkv"
-	_ "github.com/connectome-neuprint/neuPrintHTTP/storage/neuprintneo4j"
+	"github.com/aplbrain/neuPrintHTTP/storage"
+	_ "github.com/aplbrain/neuPrintHTTP/storage/badger"
+	_ "github.com/aplbrain/neuPrintHTTP/storage/dvid"
+	_ "github.com/aplbrain/neuPrintHTTP/storage/dvidkv"
+	_ "github.com/aplbrain/neuPrintHTTP/storage/neuprintneo4j"
 )
 
 // CreateStore creates a datastore from the engine specified by the configuration

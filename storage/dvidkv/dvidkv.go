@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/blang/semver"
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 	"io/ioutil"
 	"net/http"
 	"time"
