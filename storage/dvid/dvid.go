@@ -4,7 +4,7 @@ package dvid
 import (
 	"fmt"
 	"github.com/blang/semver"
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 )
 
 func init() {

@@ -3,7 +3,7 @@ package badger
 import (
 	"fmt"
 	"github.com/blang/semver"
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 	badgerdb "github.com/dgraph-io/badger"
 )
 

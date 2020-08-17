@@ -2,9 +2,9 @@ package skeletons
 
 import (
 	"bytes"
-	"github.com/connectome-neuprint/neuPrintHTTP/api"
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
-	"github.com/labstack/echo"
+	"github.com/aplbrain/neuPrintHTTP/api"
+	"github.com/aplbrain/neuPrintHTTP/storage"
+	"github.com/labstack/echo/v4"
 	"io/ioutil"
 	"net/http"
 	"strconv"

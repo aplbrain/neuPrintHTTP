@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 	"io/ioutil"
 	"net/http"
 	"strings"
