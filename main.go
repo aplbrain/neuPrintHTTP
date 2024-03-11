@@ -4,21 +4,22 @@
 // under your acocunt information. Then authorize Swagger by typing "Bearer " and
 // pasting the token.
 //
-//     Version: 0.1.0
-//     Contact: Stephen Plaza<plazas@janelia.hhmi.org>
+//	Version: 0.1.0
+//	Contact: Neuprint Team<neuprint@janelia.hhmi.org>
 //
-//     SecurityDefinitions:
-//     Bearer:
-//         type: apiKey
-//         name: Authorization
-//         in: header
-//         scopes:
-//           admin: Admin scope
-//           user: User scope
-//     Security:
-//     - Bearer:
+//	SecurityDefinitions:
+//	Bearer:
+//	    type: apiKey
+//	    name: Authorization
+//	    in: header
+//	    scopes:
+//	      admin: Admin scope
+//	      user: User scope
+//	Security:
+//	- Bearer:
 //
 // swagger:meta
+//
 //go:generate swagger generate spec -o ./swaggerdocs/swagger.yaml
 package main
 
@@ -35,6 +36,7 @@ import (
 	"github.com/aplbrain/neuPrintHTTP/api"
 	"github.com/aplbrain/neuPrintHTTP/config"
 	"github.com/aplbrain/neuPrintHTTP/logging"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 	secure "github.com/aplbrain/echo-secure"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -46,23 +48,16 @@ func customUsage() {
 }
 
 func neuprintLogo() {
-	fmt.Println("                                                                                                                                                               ")
-	fmt.Println("                                                                                                                                                               ")
-	fmt.Println("                                                          @@@@@@@@@@@%%%*.  @@@@@@@@@@@&&%*.    @@@@@@@@@@@@@@@@@@@       @@@@@@@@@@@@@@@@@@@@@@@@&            ")
-	fmt.Println("                                                           &(#@@@@@@@@@@@@%*  @@@@@@@@@@@@@@%*   &@@@@@@   &@@@@@@@#*      &&@@@@& @@@@@@@@@@@@@@@%            ")
-	fmt.Println("                                                           &@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@   &@@@@@@   &@@@@@@@@@*     &@@@@@@@@@@@@@@@@@@@@&,.            ")
-	fmt.Println("                                                           &@@@@@&   @@@@@@@* @@@@&&&  @@@@@@@   &@@@@@@   &@@@@@@@@@@@*   &@@@@@& &   &@@@@@@    @            ")
-	fmt.Println("         .,,,, *#%%#*         .#%@&%#     ,,,,.    .,,,.   &@@@@@&   *&@@@@@@ @@@@@@&  &@@@@@@   &@@@@@@   &@@@@@@@@@@@@*  &@@@@@& @   &@@@@@@                 ")
-	fmt.Println("        &@@@@#@  &@@@      *&@@   %@@%  *#@@@@    *@@@@    &@@@@@@&&@@@@@@@@  @@@@@@@@@@@@@@@@   &@@@@@@   &@@@@@@@@@@@@@& &@@@@@&     &@@@@@@                 ")
-	fmt.Println("       &@@@@@   *@@@@    *@@@@   @@@@@  @@@@     &@@@@     %@@@@@@@@@@@@@#@@  @@@@@@@@@@@@@@     &@@@@@@   &@@@@@& @@@@@@@@@@@@@@&     &@@@@@@                 ")
-	fmt.Println("     *#@@@@    @@@@@    @@@@  *@@@@    @@@@@   *#@@@@    *@@@@@@@@@@@@@@@@    @@@@@@@@@@@@&*     &@@@@@@   &@@@@@&   @@@@@@@@@@@@&     &@@@@@@                 ")
-	fmt.Println("    *@@@@    *@@@@    *@@@@@         #@@@@    #@@@@    *@  & %@@@&            @@@@@@@@@@@@@@&*   &@@@@@@   &@@@@@&     @@@@@@@@@@&     &@@@@@@                 ")
-	fmt.Println("   &@@@@    #@@@@   *@@&@@&*       *%@@@    #@@@@@   *#@   &@@@@@&            @@@@@@& @@@@@@@@#  &@@@@@@   &@@@@@&      @@@@@@@@@&     &@@@@@@                 ")
-	fmt.Println(" *&@@@@     @@@& .*@@  @@@@@*,,,*@@  @@& .%@  @@@  #@      &@@@@@&            @@@@@@&  @@@@@@@@#*&@@@@@@   &@@@@@&       @@@@@@@@&     &@@@@@@                 ")
-	fmt.Println("              @@@        @@@@@@      @@@@      @@@@       @@@@@@@@@@@      @@@@@@@@@@ @@@@@@@@@@@@@@@@@@@ @@@@@@@@@       @@@@@@@@@  @@@@@@@@@@@               ")
-	fmt.Println("                                                                                                                                                               ")
-	fmt.Println("                                                                                                                                                               ")
-	fmt.Println("neuPrintHTTP v1.2.1")
+	fmt.Println("                                                                                    ")
+	fmt.Println("                                    ooooooooo.             o8o                  .   ")
+	fmt.Println("                                    `888   `Y88.           `\"'                .o8   ")
+	fmt.Println("  ooo. .oo.    .ooooo.  oooo  oooo   888   .d88' oooo d8b oooo  ooo. .oo.   .o888oo ")
+	fmt.Println("  `888P\"Y88b  d88' `88b `888  `888   888ooo88P'  `888\"\"8P `888  `888P\"Y88b    888   ")
+	fmt.Println("   888   888  888ooo888  888   888   888          888      888   888   888    888   ")
+	fmt.Println("   888   888  888    .o  888   888   888          888      888   888   888    888 . ")
+	fmt.Println("  o888o o888o `Y8bod8P'  `V88V\"V8P' o888o        d888b    o888o o888o o888o   \"888\" ")
+	fmt.Println("                                                                                    ")
+	fmt.Println("neuPrintHTTP v1.6.5")
 
 }
 
@@ -78,6 +73,7 @@ func main() {
 	flag.IntVar(&proxyport, "proxy-port", 0, "proxy port to start server")
 	flag.StringVar(&pidfile, "pid-file", "", "file for pid")
 	flag.BoolVar(&publicRead, "public_read", false, "allow all users read access")
+	flag.BoolVar(&storage.Verbose, "verbose", false, "verbose mode")
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -243,6 +239,13 @@ func main() {
 		return c.JSON(http.StatusOK, info)
 	}))
 
+	e.GET("/api/vimoserver", secureAPI.AuthMiddleware(secure.NOAUTH)(func(c echo.Context) error {
+		info := struct {
+			Url string
+		}{options.VimoServer}
+		return c.JSON(http.StatusOK, info)
+	}))
+
 	// setup default page
 	if options.StaticDir != "" {
 		e.Static("/", options.StaticDir)
@@ -279,6 +282,21 @@ func main() {
 		e.Static("/api/help", options.SwaggerDir)
 	}
 
+	// swagger:operation GET /api/npexplorer/nglayers
+	//
+	// layer settings for neuroglancer view
+	//
+	// JSON files containing neuroglancer layer settings per dataset
+	//
+	// ---
+	// responses:
+	//   200:
+	//     description: "successful operation"
+
+	if options.NgDir != "" {
+		e.Static("/api/npexplorer/nglayers", options.NgDir)
+	}
+
 	// load connectomic default READ-ONLY API
 	if err = api.SetupRoutes(e, readGrp, store, secureAPI.AuthMiddleware(secure.ADMIN)); err != nil {
 		fmt.Print(err)
@@ -287,6 +305,11 @@ func main() {
 
 	// print logo
 	neuprintLogo()
+
+	// if log file selected print location of logs
+	if options.LoggerFile != "" {
+		fmt.Printf("logging to file: %s", options.LoggerFile)
+	}
 
 	// start server
 	secureAPI.StartEchoSecure(port)

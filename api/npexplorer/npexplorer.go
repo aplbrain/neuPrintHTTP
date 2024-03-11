@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
+
 )
 
 func init() {
@@ -176,7 +177,10 @@ func (ca *cypherAPI) getCellType(c echo.Context) error {
 	}
 
 	// constants
-	primary_status := "Traced"
+	primary_statuses := map[string]bool{
+		"Traced": true,
+		"Anchor": true,
+	}
 	minweight := 3
 
 	neuron_instance := make(map[int64]string)
@@ -251,7 +255,8 @@ func (ca *cypherAPI) getCellType(c echo.Context) error {
 		neuron_instance[bodyid] = instance
 
 		// ingore neuron types have not been traced in any way:
-		if type_status != primary_status {
+		exists := primary_statuses[type_status]
+		if !exists {
 			continue
 		}
 
@@ -271,7 +276,8 @@ func (ca *cypherAPI) getCellType(c echo.Context) error {
 		}
 
 		// might as well ignore connection as well if not to traced
-		if type_status2 != primary_status {
+		exists2 := primary_statuses[type_status2]
+		if !exists2 {
 			continue
 		}
 

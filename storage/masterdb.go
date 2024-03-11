@@ -10,13 +10,13 @@ type MasterDB struct {
 	// MainStores contains all graph DBs
 	// (first store is the default)
 	MainStores    []SimpleStore
-	DatasetStores map[string]SimpleStore
+	DatasetStores map[string]SimpleStore // key is lower case to make it case insensitive for lookup
 	Stores        []SimpleStore
 	Instances     map[string]SimpleStore
 	Types         map[string][]SimpleStore
 }
 
-// MaiinStore implements the Cypher interfacee
+// MainStore implements the Cypher interfacee
 // and is responsible for automatically modifying cypher
 // TODO: support multiple databases (concatenation) and optional no cypher overwrite
 type CypherWrapper struct {
@@ -40,12 +40,18 @@ func (cw *CypherWrapper) CypherRequest(query string, readonly bool) (CypherResul
 		query = strings.Replace(query, ":Meta", ":`"+dataset+"_Meta`", -1)
 		query = strings.Replace(query, ":SynapseSet", ":`"+dataset+"_SynapseSet`", -1)
 		query = strings.Replace(query, ":Synapse", ":`"+dataset+"_Synapse`", -1)
+		query = strings.Replace(query, ":Cell", ":`"+dataset+"_Cell`", -1)
+		query = strings.Replace(query, ":ElementSet", ":`"+dataset+"_ElementSet`", -1)
+		query = strings.Replace(query, ":Element", ":`"+dataset+"_Element`", -1)
 
 		query = strings.Replace(query, ":`Neuron`", ":`"+dataset+"_Neuron`", -1)
 		query = strings.Replace(query, ":`Segment`", ":`"+dataset+"_Segment`", -1)
 		query = strings.Replace(query, ":`Meta`", ":`"+dataset+"_Meta`", -1)
 		query = strings.Replace(query, ":`SynapseSet`", ":`"+dataset+"_SynapseSet`", -1)
 		query = strings.Replace(query, ":`Synapse`", ":`"+dataset+"_Synapse`", -1)
+		query = strings.Replace(query, ":`Cell`", ":`"+dataset+"_Cell`", -1)
+		query = strings.Replace(query, ":`ElementSet`", ":`"+dataset+"_ElementSet`", -1)
+		query = strings.Replace(query, ":`Element`", ":`"+dataset+"_Element`", -1)
 
 		// handle SynapsesTo exception
 		query = strings.Replace(query, ":XSynapsesTo", ":SynapsesTo", -1)
@@ -63,14 +69,26 @@ func (db *MasterDB) GetMain(datasets ...string) Cypher {
 	// just consider the first store for now
 	// default to the primary main store
 	if len(datasets) > 0 {
-		if store, ok := db.DatasetStores[datasets[0]]; ok {
-			return &CypherWrapper{datasets[0], store.(Cypher)}
+		lowerDataset := strings.ToLower(datasets[0])
+		if store, ok := db.DatasetStores[lowerDataset]; ok {
+			return &CypherWrapper{lowerDataset, store.(Cypher)}
 		} else {
-			return &CypherWrapper{datasets[0], db.MainStores[0].(Cypher)}
+			return &CypherWrapper{lowerDataset, db.MainStores[0].(Cypher)}
 		}
 	}
 
 	return &CypherWrapper{"", db.MainStores[0].(Cypher)}
+}
+
+// GetDataset returns Cypher for a request if a dataset exists.
+func (db *MasterDB) GetDataset(dataset string) (Cypher, error) {
+	fmt.Printf("In GetDataset() checking %v on db.DatasetStores: %v\n", dataset, db.DatasetStores)
+	lowerDataset := strings.ToLower(dataset)
+	store, ok := db.DatasetStores[lowerDataset]
+	if ok {
+		return &CypherWrapper{dataset, store.(Cypher)}, nil
+	}
+	return nil, fmt.Errorf("dataset %q not available in stores", dataset)
 }
 
 // **** Re-implement SimpleStore interface (since we could have multiple main stores) ****
