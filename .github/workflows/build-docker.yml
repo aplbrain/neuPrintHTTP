@@ -1,0 +1,16 @@
+name: Deploy to Amazon ECR
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Trigger neuprint-cm build
+      run: |
+        curl -XPOST -u "${{secrets.PAT_USERNAME}}:${{secrets.PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/aplbrain/neuprint-cm/actions/workflows/ecr.yml/dispatches --data '{"ref": "master"}'
