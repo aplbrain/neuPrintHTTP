@@ -10,7 +10,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/ipc"
 	"github.com/apache/arrow-go/v18/arrow/memory"
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 	"github.com/labstack/echo/v4"
 )
 

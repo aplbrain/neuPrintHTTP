@@ -16,7 +16,7 @@ Go must be installed (version 1.16+). neuPrintHTTP supports both file-based logg
 
 ```bash
 # Clone the repository
-git clone https://github.com/connectome-neuprint/neuPrintHTTP.git
+git clone https://github.com/aplbrain/neuPrintHTTP.git
 cd neuPrintHTTP
 
 # Build the application
@@ -30,7 +30,7 @@ go install
 
 ```bash
 # Install the latest version
-go install github.com/connectome-neuprint/neuPrintHTTP@latest
+go install github.com/aplbrain/neuPrintHTTP@latest
 ```
 
 To run tests:

@@ -77,7 +77,12 @@ type jwtCustomClaims struct {
 
 // loginHandler initiates an OAuth flow to authenticate the user.
 func loginHandler(c echo.Context) error {
-	sessionID := uuid.NewV4().String()
+	id, err := uuid.NewV4()
+	if err != nil {
+		// Handle the error appropriately.
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate UUID")
+	}
+	sessionID := id.String()
 	r := c.Request()
 	w := c.Response()
 

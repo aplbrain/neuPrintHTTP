@@ -40,7 +40,6 @@ import (
 	"github.com/aplbrain/neuPrintHTTP/logging"
 	"github.com/aplbrain/neuPrintHTTP/secure"
 	"github.com/aplbrain/neuPrintHTTP/storage"
-	secure "github.com/aplbrain/echo-secure"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

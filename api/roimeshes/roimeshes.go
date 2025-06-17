@@ -4,7 +4,7 @@ import (
 	"github.com/aplbrain/neuPrintHTTP/api"
 	"github.com/aplbrain/neuPrintHTTP/storage"
 	"github.com/labstack/echo/v4"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/connectome-neuprint/neuPrintHTTP/storage"
+	"github.com/aplbrain/neuPrintHTTP/storage"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
