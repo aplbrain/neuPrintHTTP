@@ -6,6 +6,7 @@ import (
 	_ "github.com/aplbrain/neuPrintHTTP/storage/badger"
 	_ "github.com/aplbrain/neuPrintHTTP/storage/dvid"
 	_ "github.com/aplbrain/neuPrintHTTP/storage/dvidkv"
+	_ "github.com/aplbrain/neuPrintHTTP/storage/neuprintbolt"
 	_ "github.com/aplbrain/neuPrintHTTP/storage/neuprintneo4j"
 )
 

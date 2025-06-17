@@ -176,14 +176,36 @@ const MAXVAL = 10000000000
 
 // getROIConnectivity_int implements API to find how ROIs are connected
 func (ca cypherAPI) getROIConnectivity_int(dataset string) (interface{}, error) {
-	cypher := "MATCH (neuron :Neuron) RETURN neuron.bodyId AS bodyid, neuron.roiInfo AS roiInfo"
+	cypher := `
+		MATCH (neuron :Neuron)
+		RETURN
+			toString(neuron.bodyId) AS bodyid,
+			neuron.roiInfo AS roiInfo
+	`
 	res, err := ca.Store.GetMain(dataset).CypherRequest(cypher, true)
 	if err != nil {
 		return nil, err
 	}
 
-	// restrict the query to the super level ROIs
-	cypher2 := "MATCH (meta :Meta) WITH meta, apoc.convert.fromJsonMap(meta.roiInfo) AS roiInfo UNWIND keys(roiInfo) as roi WITH meta, roiInfo, roi WHERE roi IN meta.superLevelRois AND NOT coalesce(roiInfo[roi]['excludeFromOverview'], FALSE) RETURN collect(roi) as rois"
+	// Restrict results to the overview ROIs.
+	// If Meta.overviewRois is present, use that list.
+	// Otherwise, use the primaryRois by default.
+	// But
+	cypher2 := `
+		MATCH (meta :Meta)
+		WITH
+			CASE meta.overviewRois
+				WHEN NULL THEN meta.primaryRois
+				ELSE meta.overviewRois
+			END AS overviewRois,
+			meta,
+			apoc.convert.fromJsonMap(meta.roiInfo) AS roiInfo
+		UNWIND overviewRois as roi
+		WITH roiInfo, roi
+		WHERE NOT coalesce(roiInfo[roi]['excludeFromOverview'], FALSE)
+		RETURN collect(roi) as rois
+	`
+
 	res2, err := ca.Store.GetMain(dataset).CypherRequest(cypher2, true)
 	if err != nil {
 		return nil, err
@@ -273,7 +295,27 @@ func (ca cypherAPI) getROIConnectivity_int(dataset string) (interface{}, error) 
 		}
 	}
 
-	if len(distmatrix) > 3 {
+	cypher3 := `
+	MATCH (m:Meta)
+	RETURN
+		CASE m.overviewOrder
+			WHEN NULL THEN 'clustered'
+			ELSE m.overviewOrder
+		END AS overviewOrder
+	`
+	res3, err := ca.Store.GetMain(dataset).CypherRequest(cypher3, true)
+	if err != nil {
+		return nil, err
+	}
+	var overviewOrder string
+	if len(res3.Data) > 0 {
+		overviewOrder = res3.Data[0][0].(string)
+	}
+
+	// If the dataset wants the overview ROIs to be auto-ordered,
+	// then use clustering to find the order.
+	// Otherwise, stick with the order given by Meta.overviewRois.
+	if len(distmatrix) > 3 && overviewOrder == "clustered" {
 		// sort roi names by clustering
 		subcluster, err := hclust.Cluster(distmatrix, "single")
 		if err != nil {
@@ -469,12 +511,12 @@ func (ca cypherAPI) getDailyType_int(dataset string) ([]byte, error) {
 	}
 
 	if len(rand_res.Data) == 0 {
-		return nil, fmt.Errorf("No cell type exists")
+		return nil, fmt.Errorf("no cell type exists")
 	}
 
 	typename, ok := rand_res.Data[0][0].(string)
 	if !ok {
-		return nil, fmt.Errorf("Cell type could not be parsed")
+		return nil, fmt.Errorf("cell type could not be parsed")
 	}
 
 	// get an exemplar body
@@ -487,26 +529,37 @@ func (ca cypherAPI) getDailyType_int(dataset string) ([]byte, error) {
 	}
 
 	if len(ex_res.Data) == 0 {
-		return nil, fmt.Errorf("No bodies exist for cell type")
+		return nil, fmt.Errorf("no bodies exist for cell type")
 	}
 
-	bodyidf, ok := ex_res.Data[0][0].(float64)
-	if !ok {
-		return nil, fmt.Errorf("Body id could not be parsed")
-	}
-	bodyid := int(bodyidf)
+	var bodyid, numpre, numpost int64
 
-	numpref, ok := ex_res.Data[0][1].(float64)
-	if !ok {
-		return nil, fmt.Errorf("pre could not be parsed")
+	switch v := ex_res.Data[0][0].(type) {
+	case int64:
+		bodyid = v
+	case int32:
+		bodyid = int64(v)
+	default:
+		return nil, fmt.Errorf("body id is not an int: %T", v)
 	}
-	numpre := int(numpref)
 
-	numpostf, ok := ex_res.Data[0][2].(float64)
-	if !ok {
-		return nil, fmt.Errorf("post could not be parsed")
+	switch v := ex_res.Data[0][1].(type) {
+	case int64:
+		numpre = v
+	case int32:
+		numpre = int64(v)
+	default:
+		return nil, fmt.Errorf("presyn number is not an int: %T", v)
 	}
-	numpost := int(numpostf)
+
+	switch v := ex_res.Data[0][2].(type) {
+	case int64:
+		numpost = v
+	case int32:
+		numpost = int64(v)
+	default:
+		return nil, fmt.Errorf("postsyn number is not an int: %T", v)
+	}
 
 	// get body count
 	count_query := "MATCH (n :Neuron {type: \"{typename}\"}) RETURN count(n)"
@@ -516,15 +569,14 @@ func (ca cypherAPI) getDailyType_int(dataset string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	numtypef, ok := count_res.Data[0][0].(float64)
+	numtype, ok := count_res.Data[0][0].(int64)
 	if !ok {
-		return nil, fmt.Errorf("Number of neurons could not be parsed")
+		return nil, fmt.Errorf("number of neurons could not be parsed: %T", count_res.Data[0][0])
 	}
-	numtype := int(numtypef)
 
 	// fetch connection info (for sunburst plot)
-	connection_info := "MATCH (n :Neuron {bodyId: {bodyid}})-[x :ConnectsTo]->(m) RETURN m.bodyId, m.type, x.weight, x.roiInfo, m.status, 'downstream' as direction UNION MATCH (n :Neuron {bodyId: {bodyid}})<-[x :ConnectsTo]-(m) RETURN m.bodyId, m.type, x.weight, x.roiInfo, m.status, 'upstream' as direction"
-	connection_info = strings.Replace(connection_info, "{bodyid}", strconv.Itoa(bodyid), -1)
+	connection_info := "MATCH (n :Neuron {bodyId: {bodyid}})-[x :ConnectsTo]->(m) RETURN toString(m.bodyId) as bodyId, m.type, x.weight, x.roiInfo, m.status, 'downstream' as direction UNION MATCH (n :Neuron {bodyId: {bodyid}})<-[x :ConnectsTo]-(m) RETURN toString(m.bodyId) as bodyId, m.type, x.weight, x.roiInfo, m.status, 'upstream' as direction"
+	connection_info = strings.Replace(connection_info, "{bodyid}", strconv.FormatInt(bodyid, 10), -1)
 
 	conninfo_res, err := requester.CypherRequest(connection_info, true)
 	if err != nil {
@@ -543,8 +595,13 @@ func (ca cypherAPI) getDailyType_int(dataset string) ([]byte, error) {
 		}
 
 		// fetch the value
-		keystr := strconv.Itoa(bodyid) + "_swc"
+		keystr := strconv.FormatInt(bodyid, 10) + "_swc"
 		res, err := kvstore.Get([]byte(keystr))
+		fmt.Printf("skeleton for daily type example: %s\n", keystr)
+		if err != nil {
+			fmt.Printf("error fetching skeleton: %s\n", err.Error())
+		}
+		fmt.Printf("skeleton size retrieved: %d\n", len(res))
 
 		if err == nil && len(res) > 0 {
 			// copied from skeleton API
@@ -597,7 +654,7 @@ func (ca cypherAPI) getDailyType_int(dataset string) ([]byte, error) {
 	info["numtype"] = numtype
 	info["numpre"] = numpre
 	info["numpost"] = numpost
-	info["bodyid"] = bodyid
+	info["bodyid"] = strconv.FormatInt(bodyid, 10)
 	output["info"] = info
 	output["skeleton"] = skeleton
 

@@ -115,14 +115,12 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 			if _, err = config.template.ExecuteFunc(buf, func(w io.Writer, tag string) (int, error) {
 				switch tag {
 				case "dataset":
-					var req struct {
-						Dataset string `json:"dataset,omitempty"`
+					datasetI := c.Get("dataset")
+					dataset, ok := datasetI.(string)
+					if !ok {
+						dataset = c.Param("dataset")
 					}
-					if err = c.Bind(&req); err == nil {
-						return buf.WriteString(req.Dataset)
-					} else {
-						return buf.WriteString("")
-					}
+					buf.WriteString(dataset)
 				case "time_unix":
 					return buf.WriteString(strconv.FormatInt(time.Now().Unix(), 10))
 				case "time_unix_nano":

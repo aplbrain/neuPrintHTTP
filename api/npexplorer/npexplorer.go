@@ -72,6 +72,7 @@ type errorInfo struct {
 func (ca *cypherAPI) getFindNeurons(c echo.Context) error {
 	var reqObject FindNeuronsParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerFindNeurons(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -83,6 +84,7 @@ func (ca *cypherAPI) getFindNeurons(c echo.Context) error {
 func (ca *cypherAPI) getNeuronMetaVals(c echo.Context) error {
 	var reqObject MetaValParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerNeuronMetaVals(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -94,6 +96,7 @@ func (ca *cypherAPI) getNeuronMetaVals(c echo.Context) error {
 func (ca *cypherAPI) getNeuronMeta(c echo.Context) error {
 	var reqObject DatasetParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerNeuronMeta(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -105,6 +108,7 @@ func (ca *cypherAPI) getNeuronMeta(c echo.Context) error {
 func (ca *cypherAPI) getROIConnectivity(c echo.Context) error {
 	var reqObject DatasetParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerROIConnectivity(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -116,6 +120,7 @@ func (ca *cypherAPI) getROIConnectivity(c echo.Context) error {
 func (ca *cypherAPI) getRankedTable(c echo.Context) error {
 	var reqObject ConnectionsParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerRankedTable(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -195,14 +200,14 @@ func (ca *cypherAPI) getCellType(c echo.Context) error {
 
 	for _, row := range res.Data {
 
-		bodyid_t, ok := row[0].(float64)
+		bodyid_t, ok := row[0].(int64)
 		if !ok {
 			errJSON := api.ErrorInfo{Error: "body id1 not parsed properly"}
 			return c.JSON(http.StatusBadRequest, errJSON)
 		}
 		bodyid := int64(bodyid_t)
 
-		bodyid2_t, ok := row[3].(float64)
+		bodyid2_t, ok := row[3].(int64)
 		if !ok {
 			errJSON := api.ErrorInfo{Error: "body id2 not parsed properly"}
 			return c.JSON(http.StatusBadRequest, errJSON)
@@ -214,7 +219,7 @@ func (ca *cypherAPI) getCellType(c echo.Context) error {
 			instance = ""
 		}
 
-		weight_t, ok := row[2].(float64)
+		weight_t, ok := row[2].(int64)
 		if !ok {
 			errJSON := api.ErrorInfo{Error: "weight not parsed properly"}
 			return c.JSON(http.StatusBadRequest, errJSON)
@@ -396,6 +401,7 @@ func (ca *cypherAPI) getCellType(c echo.Context) error {
 func (ca *cypherAPI) getSimpleConnections(c echo.Context) error {
 	var reqObject ConnectionsParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerSimpleConnections(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -407,6 +413,7 @@ func (ca *cypherAPI) getSimpleConnections(c echo.Context) error {
 func (ca *cypherAPI) getROIsInNeuron(c echo.Context) error {
 	var reqObject NeuronNameParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerROIsInNeuron(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -418,6 +425,7 @@ func (ca *cypherAPI) getROIsInNeuron(c echo.Context) error {
 func (ca *cypherAPI) getCommonConnectivity(c echo.Context) error {
 	var reqObject CommonConnectivityParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerCommonConnectivity(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -429,6 +437,7 @@ func (ca *cypherAPI) getCommonConnectivity(c echo.Context) error {
 func (ca *cypherAPI) getAutapses(c echo.Context) error {
 	var reqObject DatasetParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerAutapses(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -440,6 +449,7 @@ func (ca *cypherAPI) getAutapses(c echo.Context) error {
 func (ca *cypherAPI) getDistribution(c echo.Context) error {
 	var reqObject DistributionParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerDistribution(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)
@@ -451,6 +461,7 @@ func (ca *cypherAPI) getDistribution(c echo.Context) error {
 func (ca *cypherAPI) getCompleteness(c echo.Context) error {
 	var reqObject CompletenessParams
 	c.Bind(&reqObject)
+	c.Set("dataset", reqObject.Dataset)
 	if data, err := ca.ExplorerCompleteness(reqObject); err != nil {
 		errJSON := errorInfo{err.Error()}
 		return c.JSON(http.StatusBadRequest, errJSON)

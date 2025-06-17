@@ -139,7 +139,7 @@ func (ma masterAPI) setMesh(c echo.Context) error {
 	}
 
 	// post the value
-	body, err := ioutil.ReadAll(c.Request().Body)
+	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		errJSON := api.ErrorInfo{Error: "error reading binary data"}
 		return c.JSON(http.StatusBadRequest, errJSON)

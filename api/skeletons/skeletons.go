@@ -59,7 +59,7 @@ func (ma masterAPI) getSkeleton(c echo.Context) error {
 	// - in: "path"
 	//   name: "id"
 	//   schema:
-	//     type: "integer"
+	//     type: "string"
 	//   required: true
 	//   description: "body id"
 	// - in: "query"
@@ -96,7 +96,7 @@ func (ma masterAPI) getSkeleton(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, errJSON)
 	}
 
-	if _, err := strconv.Atoi(bodyid); err != nil {
+	if _, err := strconv.ParseInt(bodyid, 10, 64); err != nil {
 		errJSON := api.ErrorInfo{Error: "body id should be an integer"}
 		return c.JSON(http.StatusBadRequest, errJSON)
 	}
@@ -184,7 +184,7 @@ func (ma masterAPI) setSkeleton(c echo.Context) error {
 	// - in: "path"
 	//   name: "id"
 	//   schema:
-	//     type: "integer"
+	//     type: "string"
 	//   required: true
 	//   description: "body id"
 	// - in: "body"
@@ -204,7 +204,7 @@ func (ma masterAPI) setSkeleton(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, errJSON)
 	}
 
-	if _, err := strconv.Atoi(bodyid); err != nil {
+	if _, err := strconv.ParseInt(bodyid, 10, 64); err != nil {
 		errJSON := api.ErrorInfo{Error: "body id should be an integer"}
 		return c.JSON(http.StatusBadRequest, errJSON)
 	}
@@ -222,7 +222,7 @@ func (ma masterAPI) setSkeleton(c echo.Context) error {
 	}
 	// post the value
 	keystr := bodyid + "_swc"
-	body, err := ioutil.ReadAll(c.Request().Body)
+	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		errJSON := api.ErrorInfo{Error: "error reading binary data"}
 		return c.JSON(http.StatusBadRequest, errJSON)

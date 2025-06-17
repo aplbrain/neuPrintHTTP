@@ -1,7 +1,3 @@
-# only commit the sample config
-*.config.json
-config.json
-
 # no certificates
 *.pem
 
@@ -15,3 +11,6 @@ log.json
 
 # no binaries
 neuPrintHTTP
+
+# no node_packages
+node_modules
